@@ -1,7 +1,7 @@
 # CSP451 FINAL PROJECT
 
 # Retailops-Capstone
-RetailOps Capstone: a cloud-native platform for SMB retail. Dockerized frontend + inventory/product APIs on a VM, Azure Functions (HTTP/Queue/Timer) using Storage Queue, secure secrets, and correlation-based logging with Application Insights. GitHub Actions CI/CD auto-deploys functions and rebuilds containers on push for repeatable releases.
+RetailOps Capstone: cloud-native retail demo with Dockerized frontend + inventory/product APIs, Azure Functions (HTTP/Queue/Timer), and Azure Storage Queue. Secured via API key & env secrets; metrics/alerts in App Insights. GitHub Actions CI validates, builds images, and packages Functions (artifact) for manual deploy.
 
 # Overview
 * RetailOps helps small/medium retailers:
