@@ -1,0 +1,58 @@
+name: RetailOps CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  validate_compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.yml config -q
+
+  build_images:
+    runs-on: ubuntu-latest
+    needs: validate_compose
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t retailops/frontend ./frontend
+      - run: docker build -t retailops/inventory-api ./inventory-api
+      - run: docker build -t retailops/product-api ./product-api
+
+  package_functions:
+    runs-on: ubuntu-latest
+    needs: validate_compose
+    env:
+      FUNC_DIR: azure-functions-portal  # <- your Functions folder
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Azure Functions project exists
+        run: |
+          set -euxo pipefail
+          test -d "$FUNC_DIR"
+          test -f "$FUNC_DIR/host.json"
+
+      - name: Install zip
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Create functions package
+        run: |
+          set -euxo pipefail
+          cd "$FUNC_DIR"
+          zip -r ../retailfunc.zip . -x "local.settings.json" "*/node_modules/*" "node_modules/*"
+          ls -lh ../retailfunc.zip
+
+      - name: Upload functions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: retailfunc.zip
+          path: retailfunc.zip
+
+  deploy_placeholder:
+    runs-on: ubuntu-latest
+    needs: [package_functions, build_images]
+    steps:
+      - run: echo "Deploy stage intentionally disabled for demo"
+
