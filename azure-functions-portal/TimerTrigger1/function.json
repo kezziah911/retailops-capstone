@@ -1,0 +1,18 @@
+﻿{
+  "bindings": [
+    {
+      "name": "myTimer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 */5 * * * *"
+    },
+    {
+      "name": "outputQueueItem",
+      "direction": "out",
+      "type": "queue",
+      "queueName": "inventory-updates",
+      "methods": [],
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+}

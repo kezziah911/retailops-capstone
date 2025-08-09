@@ -1,0 +1,10 @@
+services:
+  inventory-api:
+    build: ./inventory-api
+    environment:
+      - PORT=5001
+      - API_KEY=dev-key-123
+      - QUEUE_NAME=inventory-updates
+      - STORAGE_CONNECTION_STRING=${STORAGE_CONNECTION_STRING}
+      - AZURE_STORAGE_CONNECTION_STRING=${STORAGE_CONNECTION_STRING}
+    ports: ["5001:5001"]

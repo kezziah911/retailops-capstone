@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <body>
+    <h3>RetailOps Frontend</h3>
+    <form id="f">
+      <label>Product ID <input name="productId" value="sku-123"></label>
+      <label>Qty <input name="qty" type="number" value="7"></label>
+      <button>Update Stock</button>
+    </form>
+    <pre id="out"></pre>
+    <script>
+      const f=document.getElementById('f'), out=document.getElementById('out');
+      f.onsubmit=async e=>{
+        e.preventDefault();
+        const payload = Object.fromEntries(new FormData(f));
+        const res = await fetch(location.origin.replace(/:\d+$/,'')+':5001/update',{
+          method:'POST',
+          headers:{
+            'content-type':'application/json',
+            'x-api-key':'dev-key-123',
+            'x-correlation-id':crypto.randomUUID()
+          },
+          body: JSON.stringify(payload)
+        });
+        out.textContent = JSON.stringify(await res.json(), null, 2);
+      };
+    </script>
+  </body>
+</html>
+

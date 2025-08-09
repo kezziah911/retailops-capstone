@@ -1,0 +1,68 @@
+name: RetailOps CI 
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # --- quick sanity checks on compose file
+  validate_compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate docker compose file
+        run: |
+          docker --version
+          # Validate syntax without starting anything
+          docker compose -f docker-compose.yml config
+
+  # --- build docker images (no push)
+  build_images:
+    needs: validate_compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build frontend image
+        run: docker build -t retailops/frontend:ci ./frontend
+      - name: Build inventory-api image
+        run: docker build -t retailops/inventory-api:ci ./inventory-api
+      - name: Build product-api image
+        run: docker build -t retailops/product-api:ci ./product-api
+
+  # --- package Azure Functions into a zip artifact (no deploy)
+  package_functions:
+    needs: validate_compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      # If you don't have dependencies, this will simply skip
+      - name: Install function deps (best-effort)
+        run: |
+          if [ -f azure-functions/package.json ]; then
+            cd azure-functions && npm ci || true
+          fi
+      - name: Create functions zip
+        run: |
+          mkdir -p out
+          # zip functions excluding node_modules to keep it small
+          (cd azure-functions && zip -r ../out/azure-functions.zip . -x "**/node_modules/**")
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: azure-functions-package
+          path: out/azure-functions.zip
+          retention-days: 7
+
+  # --- placeholder stage to show multi-stage pipeline (disabled)
+  deploy_placeholder:
+    needs: [build_images, package_functions]
+    runs-on: ubuntu-latest
+    if: false  # no deploy while secrets/resources are removed
+    steps:
+      - run: echo "Deploy stage intentionally disabled (no secrets/resources)."
+
